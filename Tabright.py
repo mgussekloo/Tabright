@@ -12,7 +12,10 @@ class TabrightEvent(sublime_plugin.EventListener):
 		self.move_tab_right(view)
 
 	def on_load(self,view):
-		self.move_tab_right(view)
+		window = sublime.active_window()
+		is_preview = window and view.file_name() not in [file.file_name() for file in window.views()]
+		if not is_preview:
+			self.move_tab_right(view)
 
 	def on_close(view):
 		window = sublime.active_window()
