@@ -13,3 +13,8 @@ class TabrightEvent(sublime_plugin.EventListener):
 
 	def on_load(self,view):
 		self.move_tab_right(view)
+
+	def on_close(view):
+		window = sublime.active_window()
+		rightIndex = len(window.views()) - 1
+		window.run_command("select_by_index", {"index": rightIndex})
