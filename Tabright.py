@@ -15,10 +15,10 @@ class TabrightEvent(sublime_plugin.EventListener):
 		window = sublime.active_window()
 		is_preview = window and view.file_name() not in [file.file_name() for file in window.views()]
 		if not is_preview:
-			self.move_tab_right(view)
+			if view.id()==window.active_view().id():
+				self.move_tab_right(view)
 
 	def on_close(self,view):
 		window = sublime.active_window()
 		group,index = window.get_view_index(view)
 		window.run_command("select_by_index", {"index": index+1})
-
