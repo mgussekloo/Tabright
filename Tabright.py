@@ -22,4 +22,8 @@ class TabrightEvent(sublime_plugin.EventListener):
 	def on_close(self,view):
 		window = sublime.active_window()
 		group,index = window.get_view_index(view)
-		window.run_command("select_by_index", {"index": index-1})
+		index = index + 1
+		rightIndex = len(window.views()) - 2
+		if (index + 1 > rightIndex):
+			index = rightIndex
+		window.run_command("select_by_index", {"index": index})
