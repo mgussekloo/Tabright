@@ -23,7 +23,7 @@ class TabrightEvent(sublime_plugin.EventListener):
 		window = sublime.active_window()
 		group,index = window.get_view_index(view)
 		index = index + 1
-		rightIndex = len(window.views()) - 2
-		if (index + 1 > rightIndex):
+		rightIndex = len(window.views())
+		if (index > rightIndex):
 			index = rightIndex
 		window.run_command("select_by_index", {"index": index})
