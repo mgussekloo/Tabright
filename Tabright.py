@@ -28,7 +28,7 @@ class TabrightEvent(sublime_plugin.EventListener):
 		lenViews = len(views)-1
 		newIndex = index+1
 
-		if (lenViews > 1):
+		if (lenViews > 0):
 
 			if (newIndex > lenViews):
 				newIndex = lenViews
