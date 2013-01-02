@@ -4,11 +4,13 @@ class TabrightEvent(sublime_plugin.EventListener):
 
 	def move_tab_right(self,view):
 		if not view.settings().get("Tabright_processed"):
-  			view.settings().set("Tabright_processed", True)
 			window = sublime.active_window()
-			rightIndex = len(window.views()) - 1
-			window.set_view_index(view, window.active_group(), rightIndex)
-			window.run_command("select_by_index", {"index": rightIndex})
+  			view.settings().set("Tabright_processed", True)
+			group,index = window.get_view_index(view)
+			rightIndex = len(window.views_in_group(group)) - 1
+			window.set_view_index(view, group, rightIndex)
+			window.focus_group(group)
+			window.focus_view(view)
 
 	def on_new(self,view):
 		self.move_tab_right(view)
@@ -23,11 +25,13 @@ class TabrightEvent(sublime_plugin.EventListener):
 		window = sublime.active_window()
 		group,index = window.get_view_index(view)
 		views = window.views_in_group(group)
-		newIndex = index + 1
+		lenViews = len(views)-1
+		newIndex = index+1
 
-		if (len(views) > 1):
+		if (lenViews > 1):
 
-			if (newIndex > len(views)):
-				newIndex = len(views) - 1
+			if (newIndex > lenViews):
+				newIndex = lenViews
 
-			window.run_command("select_by_index", {"index": newIndex})
+			window.focus_group(group)
+			window.focus_view(views[newIndex-1])
