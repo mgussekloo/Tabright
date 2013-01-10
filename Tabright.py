@@ -25,13 +25,11 @@ class TabrightEvent(sublime_plugin.EventListener):
 		window = sublime.active_window()
 		group,index = window.get_view_index(view)
 		views = window.views_in_group(group)
-		lenViews = len(views)-1
+		lenViews = len(views)
 		newIndex = index+1
 
-		if (lenViews > 0):
+		if (newIndex > lenViews):
+			newIndex = lenViews
 
-			if (newIndex > lenViews):
-				newIndex = lenViews
-
-			window.focus_group(group)
-			window.focus_view(views[newIndex-1])
+		window.focus_group(group)
+		window.focus_view(views[newIndex])
