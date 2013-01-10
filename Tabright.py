@@ -13,7 +13,9 @@ class TabrightEvent(sublime_plugin.EventListener):
 			window.focus_view(view)
 
 	def on_new(self,view):
-		self.move_tab_right(view)
+	    def callback(view=view):
+			return self.move_tab_right(view)
+	    sublime.set_timeout(callback, 10)
 
 	def on_load(self,view):
 		window = sublime.active_window()
@@ -25,11 +27,11 @@ class TabrightEvent(sublime_plugin.EventListener):
 		window = sublime.active_window()
 		group,index = window.get_view_index(view)
 		views = window.views_in_group(group)
-		lenViews = len(views)
-		newIndex = index+1
+		lenViews = len(views)-1 #we subtract one because we are closing a view
+		focusIndex = index + 1 #to the right
 
-		if (newIndex > lenViews):
-			newIndex = lenViews
+		if focusIndex > lenViews-1:
+			focusIndex = lenViews-1
 
 		window.focus_group(group)
-		window.focus_view(views[newIndex])
+		window.focus_view(views[focusIndex])
