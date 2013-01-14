@@ -4,15 +4,13 @@ class TabrightEvent(sublime_plugin.EventListener):
 
 	def move_tab(self,view):
 		if not view.settings().get("Tabright_processed"):
-			if not view.settings().get("Tabright_processed"):
-				view.settings().set("Tabright_processed", True)
+			view.settings().set("Tabright_processed", True)
 
-				settings = sublime.load_settings("Tabright.sublime-settings")
+			settings = sublime.load_settings("Tabright.sublime-settings")
 			open_new_tabs_at = settings.get("open_new_tabs_at")
 
 			window = sublime.active_window()
 			group,index = window.get_view_index(view)
-
 			newIndex = len(window.views_in_group(group)) - 1
 
 			if (open_new_tabs_at == "far_left"):
