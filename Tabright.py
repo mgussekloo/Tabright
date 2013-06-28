@@ -21,9 +21,9 @@ class TabrightEvent(sublime_plugin.EventListener):
 			window.focus_view(view)
 
 	def on_new(self,view):
-	    def callback(view=view):
+		def callback(view=view):
 			return self.move_tab(view)
-	    sublime.set_timeout(callback,1)
+		sublime.set_timeout(callback,1)
 
 	def on_activated(self,view):
 		if not view.settings().get("Tabright_processed"):
