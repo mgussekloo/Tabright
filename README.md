@@ -1,18 +1,20 @@
-Sublime Text 2 plugin: Tabright
-===============================
+Sublime Text 2 / 3 Plugin: Tabright
+===================================
 
-A small plugin for SublimeText 2 that opens new tabs on the far right (or far left), instead of directly next to the currently active tab. Closing a tab will move the focus to the tab directly to the right of it. This makes the interface of SublimeText 2 more predictable.
+A plugin for Sublime Text 2 / 3 that opens new tabs on the far right (or far left), instead of directly next to the currently active tab. This makes the interface of Sublime Text more predictable and user-friendly.
 
 Installation
 ------------
 
-Tabright is now, apparently, available from Package Control!
+Tabright is available from Package Control!
 
 * through Package Control (http://wbond.net/sublime_packages/package_control)
-    * After installing Package Control, restart Sublime Text 2
+    * After installing Package Control, restart Sublime Text
     * Bring up the Command Palette (Command+Shift+p on OS X, Control+Shift+p on Linux/Windows).
     * Select "Package Control: Install Package"
     * Select "Tabright"
+
+or
 
 * clone to your Sublime Text 2 `Packages` folder located at
     * Windows: %APPDATA%\Sublime Text 2
@@ -22,7 +24,7 @@ Tabright is now, apparently, available from Package Control!
 Preferences
 -----------
 
-You can change where Tabright opens new tabs in the User Settings for this plugin. (Preferences -> Package Settings -> Tabright -> Settings - User) 
+You can change where Tabright opens new tabs in the User Settings for this plugin. (Preferences -> Package Settings -> Tabright -> Settings -> User)
 
 ```javascript
 {
@@ -30,7 +32,15 @@ You can change where Tabright opens new tabs in the User Settings for this plugi
 }
 ```
 
+You can also choose to have only files open at the far right (or far left). Newly created empty tabs will still open the regular way, if that suits your workflow.
+
+```javascript
+{
+   "files_only": false // available options: false (default) or true
+}
+```
+
 Thanks
 ------
 
-I've been helped by really kind people in the SublimeText Forums and on Github, who reported bugs and pointed out improvements.
+I've been helped by awesome people in the Sublime Text Forums and here on Github, who reported bugs and pointed out improvements.

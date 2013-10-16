@@ -1,62 +1,110 @@
-import sublime, sublime_plugin
+import os
+import sys
+import sublime
+import sublime_plugin
 
-class TabrightEvent(sublime_plugin.EventListener):
+class TabrightListener(sublime_plugin.EventListener):
+	ready = False
 
-	def move_tab(self,view):
-		if not view.settings().get("Tabright_processed"):
-			view.settings().set("Tabright_processed", True)
+	def run_at_ready(self):
+		settings = sublime.load_settings("Tabright.sublime-settings")
+		self.open_new_tabs_at = settings.get("open_new_tabs_at", "far_right")
+		self.files_only = settings.get("files_only", False)
+		self.view_ids = []
+		self.run_at_reload()
+		self.ready = True
 
-			settings = sublime.load_settings("Tabright.sublime-settings")
-			open_new_tabs_at = settings.get("open_new_tabs_at")
-
-			window = sublime.active_window()
-			group,index = window.get_view_index(view)
-			newIndex = len(window.views_in_group(group)) - 1
-
-			if (open_new_tabs_at == "far_left"):
-				newIndex = 0;
-
-			window.set_view_index(view, group, newIndex)
-			window.focus_group(group)
-			window.focus_view(view)
-
-	def on_new(self,view):
-		def callback(view=view):
-			return self.move_tab(view)
-		sublime.set_timeout(callback,1)
-
-	def on_activated(self,view):
-		if not view.settings().get("Tabright_processed"):
-			def callback(view=view):
-				return self.view_presented(view)
-			sublime.set_timeout(callback,100)
-
-	def view_presented(self,view):
-		window = sublime.active_window()
-		is_preview = view.file_name() is not "None" and window and view.file_name() not in [file.file_name() for file in window.views()]
-		if is_preview:
+	def on_close(self, view):
+		if (view.id() not in self.view_ids):
+			self.focus_last()
 			return
+
+		if len(self.view_ids) > 1:
+			window = sublime.active_window()
+			views = window.views()
+
+			oldIndex = self.view_ids.index(view.id())
+			index = self.view_ids.index(view.id())
+
+			if len(self.view_ids) > index + 1:
+				index += 1
+			else:
+				index = len(self.view_ids)-2
+
+			view_id = self.view_ids[index]
+			self.focus_view_id(view_id)
+			del(self.view_ids[oldIndex])
+
+	def on_activated(self, view):
+		if not self.ready:
+			self.run_first()
+
+		def callback(view=view):
+			return self.process_tabs(view)
+		sublime.set_timeout(callback,10)
+
+	def run_at_reload(self):
+		window = sublime.active_window()
+		views = window.views()
+		if (len(views)>0):
+			self.process_tabs(window.active_view())
+
+	def process_tabs(self, view):
+		window = sublime.active_window()
+		views = window.views()
+
+		old_group, old_index = window.get_view_index(view)
+
+		view_ids = []
+		new_view_ids = []
+		old_view_ids = []
+
+		for v in views:
+			if v.id() not in self.view_ids:
+				if self.files_only and v.file_name() == None:
+					old_view_ids.append(v.id())
+				else:
+					new_view_ids.append(v.id())
+			else:
+				old_view_ids.append(v.id())
+			view_ids.append(v.id())
+
+		if len(new_view_ids) == 0:
+			return
+
+		view_ids = [0] * len(view_ids)
+
+		for v in views:
+			group, index = window.get_view_index(v)
+			if v.id() not in new_view_ids:
+				index = old_view_ids.index(v.id())
+				if (self.open_new_tabs_at == "far_left"):
+					index += len(new_view_ids)
+			else:
+				if (self.open_new_tabs_at == "far_left"):
+					index = new_view_ids.index(v.id())
+				else:
+					index = len(old_view_ids)+new_view_ids.index(v.id())
+
+			view_ids[index] = v.id()
+			window.set_view_index(v, group, index)
+
+		self.view_ids = view_ids
+
+		if len(new_view_ids)==1:
+			self.focus_last()
 		else:
-			def callback(view=view):
-				return self.move_tab(view)
-			sublime.set_timeout(callback,1)
+			self.focus_view_id(view_ids[old_index])
 
-	def on_close(self,view):
+	def focus_last(self):
+		if (self.open_new_tabs_at == "far_left"):
+			self.focus_view_id(self.view_ids[0])
+		else:
+			self.focus_view_id(self.view_ids[-1])
+
+	def focus_view_id(self, view_id):
 		window = sublime.active_window()
-		group,index = window.get_view_index(view)
-		def callback(index=index):
-			return self.focus_tab(index)
-		sublime.set_timeout(callback,1)
-
-	def focus_tab(self,index):
-		window = sublime.active_window()
-		group = window.active_group()
-		views = window.views_in_group(group)
-		lenViews = len(views)
-
-		if (lenViews>0):
-			if index > lenViews-1:
-				index = lenViews-1
-
-			window.focus_group(group)
-			window.focus_view(views[index])
+		views = window.views()
+		for v in views:
+			if v.id() == view_id:
+				window.focus_view(v)
