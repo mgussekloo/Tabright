@@ -37,7 +37,7 @@ class TabrightListener(sublime_plugin.EventListener):
 
 	def on_activated(self, view):
 		if not self.ready:
-			self.run_first()
+			self.run_at_ready()
 
 		def callback(view=view):
 			return self.process_tabs(view)
