@@ -53,15 +53,16 @@ class TabrightListener(sublime_plugin.EventListener):
 
 	def process_tabs(self, view):
 		window = sublime.active_window()
-		views = window.views()
 
 		if int(sublime.version()) < 3000:
 			is_preview = view.file_name() is not "None" and window and view.file_name() not in [file.file_name() for file in window.views()]
 			if is_preview:
-				self.view_ids.append(view.id())
+				if view.id() not in self.view_ids:
+					self.view_ids.append(view.id())
 				return
 
 		old_group, old_index = window.get_view_index(view)
+		views = window.views_in_group(old_group)
 
 		view_ids = []
 		new_view_ids = []
@@ -77,7 +78,7 @@ class TabrightListener(sublime_plugin.EventListener):
 				old_view_ids.append(v.id())
 			view_ids.append(v.id())
 
-		if len(new_view_ids) == 0:
+		if len(new_view_ids) == 0 and len(view_ids) == len(self.view_ids):
 			return
 
 		view_ids = [0] * len(view_ids)
