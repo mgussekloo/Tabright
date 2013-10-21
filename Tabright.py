@@ -5,8 +5,9 @@ import sublime_plugin
 
 class TabrightListener(sublime_plugin.EventListener):
 	ready = False
+	busy = False
 
-	def run_at_ready(self):
+	def get_ready(self):
 		settings = sublime.load_settings("Tabright.sublime-settings")
 		self.open_new_tabs_at = settings.get("open_new_tabs_at", "far_right")
 		self.files_only = settings.get("files_only", False)
@@ -36,8 +37,13 @@ class TabrightListener(sublime_plugin.EventListener):
 			del(self.view_ids[oldIndex])
 
 	def on_activated(self, view):
+		if self.busy:
+			return
+
+		print("not busy")
+
 		if not self.ready:
-			self.run_at_ready()
+			self.get_ready()
 
 		def callback(view=view):
 			return self.process_tabs(view)
@@ -52,6 +58,8 @@ class TabrightListener(sublime_plugin.EventListener):
 			self.process_tabs(window.active_view())
 
 	def process_tabs(self, view):
+		self.busy = True
+
 		window = sublime.active_window()
 
 		if int(sublime.version()) < 3000:
@@ -63,6 +71,10 @@ class TabrightListener(sublime_plugin.EventListener):
 
 		old_group, old_index = window.get_view_index(view)
 		views = window.views_in_group(old_group)
+
+		if len(views)==0:
+			self.busy = False
+			return
 
 		view_ids = []
 		new_view_ids = []
@@ -78,10 +90,12 @@ class TabrightListener(sublime_plugin.EventListener):
 				old_view_ids.append(v.id())
 			view_ids.append(v.id())
 
-		if len(new_view_ids) == 0 and len(view_ids) == len(self.view_ids):
+		if len(new_view_ids) == 0:
+			self.busy = False
 			return
 
 		view_ids = [0] * len(view_ids)
+		offset = 0
 
 		for v in views:
 			group, index = window.get_view_index(v)
@@ -91,14 +105,17 @@ class TabrightListener(sublime_plugin.EventListener):
 					index += len(new_view_ids)
 			else:
 				if (self.open_new_tabs_at == "far_left"):
-					index = new_view_ids.index(v.id())
+					index = offset
 				else:
-					index = len(old_view_ids)+new_view_ids.index(v.id())
+					index = len(old_view_ids)+offset
+				offset += 1
 
 			view_ids[index] = v.id()
 			window.set_view_index(v, group, index)
 
 		self.view_ids = view_ids
+
+		self.busy = False
 
 		if len(new_view_ids)==1:
 			self.focus_last()
