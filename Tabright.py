@@ -40,8 +40,6 @@ class TabrightListener(sublime_plugin.EventListener):
 		if self.busy:
 			return
 
-		print("not busy")
-
 		if not self.ready:
 			self.get_ready()
 
@@ -67,6 +65,7 @@ class TabrightListener(sublime_plugin.EventListener):
 			if is_preview:
 				if view.id() not in self.view_ids:
 					self.view_ids.append(view.id())
+				self.busy = False
 				return
 
 		old_group, old_index = window.get_view_index(view)
