@@ -11,7 +11,10 @@ class TabrightListener(sublime_plugin.EventListener):
 		settings = sublime.load_settings("Tabright.sublime-settings")
 		self.open_new_tabs_at = settings.get("open_new_tabs_at", "far_right")
 		self.files_only = settings.get("files_only", False)
+
 		self.view_ids = []
+		self.active_group = 0
+
 		self.run_at_reload()
 		self.ready = True
 
@@ -56,6 +59,7 @@ class TabrightListener(sublime_plugin.EventListener):
 			self.process_tabs(window.active_view())
 
 	def process_tabs(self, view):
+		# make ure we do not get multiple callbacks
 		self.busy = True
 
 		window = sublime.active_window()
@@ -68,60 +72,63 @@ class TabrightListener(sublime_plugin.EventListener):
 				self.busy = False
 				return
 
-		old_group, old_index = window.get_view_index(view)
-		views = window.views_in_group(old_group)
-
-		if len(views)==0:
-			self.busy = False
-			return
+		group, index = window.get_view_index(view)
+		views = window.views_in_group(group)
 
 		view_ids = []
 		new_view_ids = []
-		old_view_ids = []
+
+		# looking at a new group? just renew everything
+		if (group != self.active_group):
+			self.view_ids = []
 
 		for v in views:
 			if v.id() not in self.view_ids:
 				if self.files_only and v.file_name() == None:
-					old_view_ids.append(v.id())
+					pass
 				else:
 					new_view_ids.append(v.id())
-			else:
-				old_view_ids.append(v.id())
 			view_ids.append(v.id())
 
-		if len(new_view_ids) == 0:
+		if len(new_view_ids) != 1:
+			#we accept the current index
+			self.view_ids = view_ids
+			self.active_group = group
 			self.busy = False
 			return
 
+		# make the new tabs appear at the tabright position
 		view_ids = [0] * len(view_ids)
-		offset = 0
+		offset_old = 0;
+		offset_new = 0;
 
 		for v in views:
 			group, index = window.get_view_index(v)
 			if v.id() not in new_view_ids:
-				index = old_view_ids.index(v.id())
 				if (self.open_new_tabs_at == "far_left"):
-					index += len(new_view_ids)
+					index = offset_old + offset_new
+				else:
+					index = offset_old
+				offset_old += 1
 			else:
 				if (self.open_new_tabs_at == "far_left"):
-					index = offset
+					index = offset_new
 				else:
-					index = len(old_view_ids)+offset
-				offset += 1
+					index = len(view_ids)-len(new_view_ids)+offset_new
+				offset_new += 1
 
 			view_ids[index] = v.id()
 			window.set_view_index(v, group, index)
 
 		self.view_ids = view_ids
+		self.active_group = group
+		self.focus_last()
 
 		self.busy = False
 
-		if len(new_view_ids)==1:
-			self.focus_last()
-		else:
-			self.focus_view_id(view_ids[old_index])
-
 	def focus_last(self):
+		if (len(self.view_ids)==0):
+			return
 		if (self.open_new_tabs_at == "far_left"):
 			self.focus_view_id(self.view_ids[0])
 		else:
