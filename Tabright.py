@@ -78,8 +78,8 @@ class TabrightListener(sublime_plugin.EventListener):
 			self.view_ids = []
 
 		for v in views:
-			if v.id() not in self.view_ids:
-				if self.files_only and v.file_name() == None:
+			if v.id() not in self.view_ids:				
+				if self.files_only and (v.file_name() == None or v.file_name() == "None"):
 					pass
 				else:
 					new_view_ids.append(v.id())
