@@ -4,10 +4,9 @@ import sublime
 import sublime_plugin
 
 class TabrightListener(sublime_plugin.EventListener):
-	ready = False
 	busy = False
 
-	def get_ready(self):
+  	def __init__(self):
 		settings = sublime.load_settings("Tabright.sublime-settings")
 		self.open_new_tabs_at = settings.get("open_new_tabs_at", "far_right")
 		self.files_only = settings.get("files_only", False)
@@ -16,7 +15,7 @@ class TabrightListener(sublime_plugin.EventListener):
 		self.active_group = 0
 
 		self.run_at_reload()
-		self.ready = True
+		self.busy = False
 
 	def on_close(self, view):
 		if (view.id() not in self.view_ids):
@@ -43,11 +42,10 @@ class TabrightListener(sublime_plugin.EventListener):
 		if self.busy:
 			return
 
-		if not self.ready:
-			self.get_ready()
-
 		def callback(view=view):
 			return self.process_tabs(view)
+
+		self.busy = True
 		sublime.set_timeout(callback,10)
 
 	def run_at_reload(self):
@@ -59,9 +57,6 @@ class TabrightListener(sublime_plugin.EventListener):
 			self.process_tabs(window.active_view())
 
 	def process_tabs(self, view):
-		# make ure we do not get multiple callbacks
-		self.busy = True
-
 		window = sublime.active_window()
 
 		if int(sublime.version()) < 3000:
