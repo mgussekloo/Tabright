@@ -6,7 +6,7 @@ import sublime_plugin
 class TabrightListener(sublime_plugin.EventListener):
 	busy = False
 
-  	def __init__(self):
+	def __init__(self):
 		settings = sublime.load_settings("Tabright.sublime-settings")
 		self.open_new_tabs_at = settings.get("open_new_tabs_at", "far_right")
 		self.files_only = settings.get("files_only", False)
